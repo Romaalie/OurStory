@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function StoryListScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text>This is the screen for the listing of a user's stories</Text>
-    </View>
+    </SafeAreaView>
   );
 }
 

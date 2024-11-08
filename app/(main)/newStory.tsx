@@ -1,16 +1,17 @@
-import { View, Text, StyleSheet } from 'react-native';
+import StoryTemplate from '@/components/StoryTemplate';
+import { Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NewStoryScreen() {
   return (
-    <View style={styles.container}>
-      <Text>This is the screen where a user can create a new story</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <StoryTemplate />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
