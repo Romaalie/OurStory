@@ -1,11 +1,11 @@
-import StoryTemplate from '@/components/StoryTemplate';
+import NewStoryTemplate from '@/components/NewStoryTemplate';
 import { StyleSheet, View } from 'react-native';
 
 
 export default function NewStoryScreen() {
   return (
     <View style={styles.container}>
-      <StoryTemplate />
+      <NewStoryTemplate />
     </View>
   );
 }
