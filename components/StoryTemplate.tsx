@@ -1,6 +1,5 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Text, View } from "react-native";
 import { useState } from "react";
@@ -8,6 +7,7 @@ import Icon from 'react-native-vector-icons/AntDesign';
 
 export default function StoryTemplate() {
 
+    const [page, setPage] = useState<Page>()
     const [story, setStory] = useState<Story>({ pages: [] });
 
     const addPage = (newPage: Page) => {
@@ -37,8 +37,7 @@ export default function StoryTemplate() {
                 <Text>
                     Add picture
                 </Text>
-                <Icon name="PlusCircleOutlined" />
-
+                <Icon name="pluscircle" />
             </TouchableOpacity>
 
             {/* Button for adding the text. Should open a text input. */}
