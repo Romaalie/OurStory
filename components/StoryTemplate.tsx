@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Text, View } from "react-native";
 import { useState } from "react";
+import Icon from 'react-native-vector-icons/AntDesign';
 
 export default function StoryTemplate() {
 
@@ -36,6 +37,8 @@ export default function StoryTemplate() {
                 <Text>
                     Add picture
                 </Text>
+                <Icon name="PlusCircleOutlined" />
+
             </TouchableOpacity>
 
             {/* Button for adding the text. Should open a text input. */}
