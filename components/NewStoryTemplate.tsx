@@ -1,27 +1,23 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { Text, TextInput, View } from "react-native";
+import { Alert, Text, TextInput, View } from "react-native";
 import { useEffect, useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
 
+
 export default function NewStoryTemplate() {
 
+    const [imageUri, setImageUri] = useState(null);
     const [page, setPage] = useState<Page>({ bgImageUrl: "", textBoxContent: "" })
-    const [story, setStory] = useState<Story>({ pages: [] });
+    const [story, setStory] = useState<Story>({id: '', name: '', pages: [] });
 
     const addPage = (newPage: Page) => {
         setStory(prevStory => ({
             ...prevStory,
             pages: [...prevStory.pages, newPage]
         }));
-    };
-
-    const changePageTextBoxContent = (newText: string) => {
-        setPage(prevPage => ({
-            ...prevPage,
-            textBoxContent: newText
-        }));
+        setPage({bgImageUrl: "", textBoxContent: ""})
     };
 
     // For debugging, remove when not needed
@@ -34,9 +30,10 @@ export default function NewStoryTemplate() {
         <View>
             {/*
                 Button for completing story.
+                Give a name to your story.
                 Should ask for confirmation.
                 (preview feature?)
-                onsubmit should send stuff to firebase. Figure out the handling of images there.
+                After confirmation should send stuff to firebase and dropbox.
                 Move to previous screen?            
             */}
             <TouchableOpacity>
@@ -82,18 +79,19 @@ export default function NewStoryTemplate() {
                 multiline
                 numberOfLines={5}
                 maxLength={50}
-                onChangeText={changePageTextBoxContent}
+                onChangeText={text => setPage({ ...page, textBoxContent: text })}
                 placeholder="There is a multiline textbox here. Need to contain it."
             />
-            {/* For user guidance. Style it. */}
-            <Text>{50 - page.textBoxContent.length} characters remaining</Text>
-
             {/* Show guiding plus icon if there is no content. Reposition icon or something though. */}
             {
                 !page.textBoxContent ? (
-                <Icon name="pluscircle" />
+                    <Icon name="pluscircle" />
                 ) : null
             }
+            {/* For user guidance. Style it. */}
+            <Text>{50 - page.textBoxContent.length} characters remaining</Text>
+
+
 
         </View>
     )
