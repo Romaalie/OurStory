@@ -1,23 +1,25 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { Alert, Text, TextInput, View } from "react-native";
-import { useEffect, useState } from "react";
+import { Text, TextInput, View, TouchableOpacity, Modal } from "react-native";
+import { useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
+import { CameraActions } from '@/components/expocamera/CameraActions'
 
 
 export default function NewStoryTemplate() {
 
-    const [imageUri, setImageUri] = useState(null);
+    const [imageUri, setImageUri] = useState<String>('');
     const [page, setPage] = useState<Page>({ bgImageUrl: "", textBoxContent: "" })
-    const [story, setStory] = useState<Story>({id: '', name: '', pages: [] });
+    const [story, setStory] = useState<Story>({ id: '', name: '', pages: [] });
+
+    const [showCamera, setShowCamera] = useState(false);
 
     const addPage = (newPage: Page) => {
         setStory(prevStory => ({
             ...prevStory,
             pages: [...prevStory.pages, newPage]
         }));
-        setPage({bgImageUrl: "", textBoxContent: ""})
+        setPage({ bgImageUrl: "", textBoxContent: "" })
     };
 
     // For debugging, remove when not needed
@@ -48,12 +50,22 @@ export default function NewStoryTemplate() {
                 Maybe create a separate component for modal asking to select gallery or use camera.
                 Or utilize an alert. Anyhow functionality in another component.
             */}
-            <TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => setShowCamera(true)}>
                 <Text>
                     Add image
                 </Text>
                 <Icon name="pluscircle" />
             </TouchableOpacity>
+
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={showCamera}
+                onRequestClose={() => setShowCamera(false)}
+            >
+                <CameraActions onClose={() => setShowCamera(false)} />
+            </Modal>
 
 
             {/*
