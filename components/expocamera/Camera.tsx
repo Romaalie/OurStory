@@ -1,11 +1,17 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
-import { Button, View, Text, Image, Modal, TextInput } from 'react-native';
+import { Button, View, Text, Image, Modal, TextInput, Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { saveToFilesystem } from '../filesystem/filesystemActions';
+import { DropboxAuth } from '../dropbox/DboxAuth';
+import { DropboxUploader } from '../dropbox/DboxUpload';
 
 
-export function Camera({ onClose, onSavePhoto }: { onClose: () => void, onSavePhoto: (uri: string) => void }) {
+export function Camera({ onClose, onSavePhoto, onUploadComplete }: {
+    onClose: () => void,
+    onSavePhoto: (uri: string) => void,
+    onUploadComplete: (fileUrl: string) => void
+}) {
 
     // Check the types for these
     const [photoName, setPhotoName] = useState('');
@@ -42,10 +48,36 @@ export function Camera({ onClose, onSavePhoto }: { onClose: () => void, onSavePh
 
         setPhotoName('');
         setPhotoBase64('');
-        // Implement this in dropbox components
-        //uploadToDropbox(permanentUri);
-        setSavingModalVisible(false);
-        closeCamera();
+        if (DropboxAuth()) {
+            DropboxUploader({
+                fileUri: permanentUri,
+                fileName: userGivenName,
+                onUploadComplete: (message) => {
+                    console.log(message);
+
+                    if (message.includes('File uploaded to Dropbox')) {
+                        const fileUrl = message.split(': ')[1];
+                        onUploadComplete(fileUrl);
+                        setSavingModalVisible(false);
+                        closeCamera();
+                    } else {
+                        console.error('Error with Dropbox upload:', message);
+                        Alert.alert
+                    }
+                },
+            });
+        } else {
+            console.error("Dropbox authentication failed");
+            Alert.alert(
+                "Upload Failed",
+                "There was an error uploading the file to Dropbox. Please try again.",
+                [
+                    { text: "Retry", onPress: save },
+                    { text: "Cancel", style: "cancel" }
+                ],
+                { cancelable: true }
+            );
+        }
     }
 
     if (!permission) {

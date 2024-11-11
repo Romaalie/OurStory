@@ -16,9 +16,12 @@ export default function NewStoryTemplate() {
 
     const handleSavePhoto = (uri: string) => {
         setImageUri(uri);  // Update the URI to be used in the page's background
-        setPage(prevPage => ({ ...prevPage, bgImageUrl: uri }));
         setShowCamera(false);  // Close the camera after saving
     };
+
+    const handleUploadComplete = (fileUrl: string) => {
+        setPage(prevPage => ({ ...prevPage, bgImageUrl: fileUrl }));
+    }
 
     const addPage = (newPage: Page) => {
         setStory(prevStory => ({
@@ -36,6 +39,11 @@ export default function NewStoryTemplate() {
      */
     return (
         <View>
+            {/**
+             * Currently works though styling is way off.
+             * Picture shows in portrait mode.
+             * Need to make modify the parent container as well.
+             */}
             {
                 imageUri ? (
                     <ImageBackground
@@ -69,14 +77,19 @@ export default function NewStoryTemplate() {
 
             {/*
                 Button for adding a background image/taking a picture.
-                Maybe create a separate component for modal asking to select gallery or use camera.
-                Or utilize an alert. Anyhow functionality in another component.
+                Currently used to show a (almost)fullscreen modal with the Camera component for taking a picture.
             */}
             <TouchableOpacity
                 onPress={() => setShowCamera(true)}>
-                <Text>
-                    Add image
-                </Text>
+                {!imageUri ? (
+                    <Text>
+                        Add background image
+                    </Text>
+                ) :
+                    <Text>
+                        Change background image
+                    </Text>
+                }
                 <Icon name="pluscircle" />
             </TouchableOpacity>
 
@@ -86,13 +99,11 @@ export default function NewStoryTemplate() {
                 visible={showCamera}
                 onRequestClose={() => setShowCamera(false)}
             >
-                <Camera onClose={() => setShowCamera(false)} onSavePhoto={handleSavePhoto} />
+                <Camera onClose={() => setShowCamera(false)}
+                    onSavePhoto={handleSavePhoto}
+                    onUploadComplete={handleUploadComplete}
+                />
             </Modal>
-
-            {/*
-                Remember to set the image as background.
-            */}
-
 
             {/*
                 Button for adding another page to the story.
