@@ -1,18 +1,24 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
-import { Text, TextInput, View, TouchableOpacity, Modal } from "react-native";
+import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground } from "react-native";
 import { useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
-import { CameraActions } from '@/components/expocamera/CameraActions'
+import { Camera } from '@/components/expocamera/Camera'
 
 
 export default function NewStoryTemplate() {
 
-    const [imageUri, setImageUri] = useState<String>('');
+    const [imageUri, setImageUri] = useState<string>('');
     const [page, setPage] = useState<Page>({ bgImageUrl: "", textBoxContent: "" })
     const [story, setStory] = useState<Story>({ id: '', name: '', pages: [] });
 
     const [showCamera, setShowCamera] = useState(false);
+
+    const handleSavePhoto = (uri: string) => {
+        setImageUri(uri);  // Update the URI to be used in the page's background
+        setPage(prevPage => ({ ...prevPage, bgImageUrl: uri }));
+        setShowCamera(false);  // Close the camera after saving
+    };
 
     const addPage = (newPage: Page) => {
         setStory(prevStory => ({
@@ -30,6 +36,22 @@ export default function NewStoryTemplate() {
      */
     return (
         <View>
+            {
+                imageUri ? (
+                    <ImageBackground
+                        source={{ uri: imageUri }}
+                        style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            height: '100%',
+                            width: '100%',
+                            position: 'absolute',
+                            zIndex: -1
+                        }}
+                    />
+                ) : null
+            }
             {/*
                 Button for completing story.
                 Give a name to your story.
@@ -64,8 +86,12 @@ export default function NewStoryTemplate() {
                 visible={showCamera}
                 onRequestClose={() => setShowCamera(false)}
             >
-                <CameraActions onClose={() => setShowCamera(false)} />
+                <Camera onClose={() => setShowCamera(false)} onSavePhoto={handleSavePhoto} />
             </Modal>
+
+            {/*
+                Remember to set the image as background.
+            */}
 
 
             {/*
