@@ -8,16 +8,19 @@ import { Camera } from '@/components/expocamera/Camera'
 
 export default function NewStoryTemplate() {
 
-    const [imageUri, setImageUri] = useState<string>('');
-    const [page, setPage] = useState<Page>({ bgImageUrl: "", textBoxContent: "" })
+    const [localImage, setLocalImage] = useState<string>('');
+    const [imageUri, setImageUri] = useState<string>(''); // Don't know what I am doing with this right now
+    const [page, setPage] = useState<Page>({ bgImageDboxPath: "", textBoxContent: "" })
     const [story, setStory] = useState<Story>({ id: '', name: '', pages: [] });
 
     const [showCamera, setShowCamera] = useState(false);
 
-    const handleSavePhoto = (uri: string) => {
-        setImageUri(uri);  // Update the URI to be used in the page's background
-        setPage(prevPage => ({ ...prevPage, bgImageUrl: uri }));
+    const handleSavePhoto = ({ localImage, dropboxPath }: { localImage: string, dropboxPath: string }) => {
+        setImageUri(dropboxPath);  // Update the URI to be used in the page's background
+        setLocalImage(localImage);
+        setPage(prevPage => ({ ...prevPage, bgImageDboxPath: dropboxPath }));
         setShowCamera(false);  // Close the camera after saving
+        console.log(dropboxPath);
     };
 
     const addPage = (newPage: Page) => {
@@ -25,7 +28,7 @@ export default function NewStoryTemplate() {
             ...prevStory,
             pages: [...prevStory.pages, newPage]
         }));
-        setPage({ bgImageUrl: "", textBoxContent: "" })
+        setPage({ bgImageDboxPath: "", textBoxContent: "" })
     };
 
     // For debugging, remove when not needed
@@ -37,9 +40,9 @@ export default function NewStoryTemplate() {
     return (
         <View>
             {
-                imageUri ? (
+                localImage ? (
                     <ImageBackground
-                        source={{ uri: imageUri }}
+                        source={{ uri: localImage }}
                         style={{
                             flex: 1,
                             justifyContent: 'center',
@@ -74,9 +77,15 @@ export default function NewStoryTemplate() {
             */}
             <TouchableOpacity
                 onPress={() => setShowCamera(true)}>
-                <Text>
-                    Add image
-                </Text>
+                {!imageUri ? (
+                    <Text>
+                        Add background image
+                    </Text>
+                ) :
+                    <Text>
+                        Change background image
+                    </Text>
+                }
                 <Icon name="pluscircle" />
             </TouchableOpacity>
 

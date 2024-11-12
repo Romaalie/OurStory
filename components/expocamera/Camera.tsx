@@ -1,11 +1,16 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
-import { Button, View, Text, Image, Modal, TextInput } from 'react-native';
+import { Button, View, Text, Modal, TextInput } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { saveToFilesystem } from '../filesystem/filesystemActions';
+import { uploadImageToDropbox } from '../dropbox/DboxUpload';
 
 
-export function Camera({ onClose, onSavePhoto }: { onClose: () => void, onSavePhoto: (uri: string) => void }) {
+export function Camera({ onClose, onSavePhoto, userId = 'tester' }: {
+    onClose: () => void;
+    onSavePhoto: (data: { localImage: string; dropboxPath: string }) => void;
+    userId?: string;
+}) {
 
     // Check the types for these
     const [photoName, setPhotoName] = useState('');
@@ -18,6 +23,7 @@ export function Camera({ onClose, onSavePhoto }: { onClose: () => void, onSavePh
     // Have not figured out the typing problem for this
     // See IDE error for .takePictureAsync below
     const camera = useRef(null);
+    const dropboxPath = `/OurStoryImageStorage/${userId}/${userGivenName}.jpg`
 
     const snap = async () => {
         if (camera.current) {
@@ -33,19 +39,33 @@ export function Camera({ onClose, onSavePhoto }: { onClose: () => void, onSavePh
     }
 
     const save = async () => {
-        const permanentUri = FileSystem.documentDirectory + userGivenName;
-        await saveToFilesystem({
-            fromUri: photoName,
-            toUri: permanentUri,
-            onSave: onSavePhoto,
-        });
+        try {
+            const permanentUri = FileSystem.documentDirectory + userGivenName;
+            // Add error handling?
+            await saveToFilesystem({
+                fromUri: photoName,
+                toUri: permanentUri,
+                onSave: onSavePhoto,
+            });
+            // Add error handling?
+            const uploadedPath = await uploadImageToDropbox(photoName, dropboxPath);
 
-        setPhotoName('');
-        setPhotoBase64('');
-        // Implement this in dropbox components
-        //uploadToDropbox(permanentUri);
-        setSavingModalVisible(false);
-        closeCamera();
+            if (uploadedPath) {
+                onSavePhoto({ localImage: permanentUri, dropboxPath: uploadedPath });
+            }
+            else {
+                console.error('Dropbox upload failed.');
+            }
+
+
+            setPhotoName('');
+            setPhotoBase64('');
+            setSavingModalVisible(false);
+            closeCamera();
+        }
+        catch (error) {
+            console.error('Error in save function: ', error);
+        }
     }
 
     if (!permission) {
