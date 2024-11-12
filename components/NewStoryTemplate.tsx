@@ -1,6 +1,6 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
-import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground } from "react-native";
+import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground, Alert } from "react-native";
 import { useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
 import { Camera } from '@/components/expocamera/Camera'
@@ -16,20 +16,64 @@ export default function NewStoryTemplate() {
     const [showCamera, setShowCamera] = useState(false);
 
     const handleSavePhoto = ({ localImage, dropboxPath }: { localImage: string, dropboxPath: string }) => {
-        setImageUri(dropboxPath);  // Update the URI to be used in the page's background
+        setImageUri(dropboxPath);
         setLocalImage(localImage);
         setPage(prevPage => ({ ...prevPage, bgImageDboxPath: dropboxPath }));
-        setShowCamera(false);  // Close the camera after saving
-        console.log(dropboxPath);
+        setShowCamera(false);
+        //console.log(dropboxPath);
     };
 
-    const addPage = (newPage: Page) => {
+    const addPage = () => {
+
+        if (!page.textBoxContent || !page.bgImageDboxPath) {
+            Alert.alert(
+                "Incomplete Page",
+                "Please add both text and a background image before trying to add a new page.",
+                [{ text: "OK" }]
+            );
+            return;
+        }
         setStory(prevStory => ({
             ...prevStory,
-            pages: [...prevStory.pages, newPage]
+            pages: [...prevStory.pages, page]
         }));
         setPage({ bgImageDboxPath: "", textBoxContent: "" })
+        setLocalImage('');
     };
+
+    const endStoryChecks = () => {
+        if (!story.pages || story.pages.length === 0) {
+            Alert.alert(
+                "Incomplete Story",
+                "There are no pages in your story. Please add at least one page.",
+                [{ text: "OK"}]
+            );
+            return;
+        }
+        if (story.pages.length <= 3) {
+            Alert.alert(
+                "Short story",
+                "There are three or fewer pages in your story. Are you sure you want to end it?",
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    },
+                    {
+                        text: "OK",
+                        onPress: () => {endStory}
+                    }
+                ],
+                { cancelable: true }
+            );
+            return;
+        }
+        endStory();
+    }
+
+    const endStory = () => {
+        // Save story to firebase                       
+    }
 
     // For debugging, remove when not needed
     /*     
@@ -63,7 +107,8 @@ export default function NewStoryTemplate() {
                 After confirmation should send stuff to firebase and dropbox.
                 Move to previous screen?            
             */}
-            <TouchableOpacity>
+            <TouchableOpacity
+            onPress={endStoryChecks}>
                 <Text>
                     End/Complete Story
                 </Text>
@@ -77,7 +122,7 @@ export default function NewStoryTemplate() {
             */}
             <TouchableOpacity
                 onPress={() => setShowCamera(true)}>
-                {!imageUri ? (
+                {!localImage ? (
                     <Text>
                         Add background image
                     </Text>
@@ -109,7 +154,8 @@ export default function NewStoryTemplate() {
                 Check if textbox is empty or there is no image?
                 Position to the right of add image, so put them in a flex horizontal view?                
             */}
-            <TouchableOpacity>
+            <TouchableOpacity
+                onPress={addPage}>
                 <Text>
                     Next page
                 </Text>
