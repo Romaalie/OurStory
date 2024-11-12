@@ -1,4 +1,4 @@
 export interface Page {
-    bgImageUrl: string,
+    bgImageDboxPath: string,
     textBoxContent: string
 }
