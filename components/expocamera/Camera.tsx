@@ -13,12 +13,12 @@ export function Camera({ onClose, onSavePhoto, userId = 'tester' }: {
 }) {
 
     // Check the types for these
-    const [photoName, setPhotoName] = useState('');
-    const [photoBase64, setPhotoBase64] = useState('');
+    const [photoName, setPhotoName] = useState<string>('');
+    const [photoBase64, setPhotoBase64] = useState<string>('');
     const [permission, requestPermission] = useCameraPermissions();
 
-    const [userGivenName, setUserGivenName] = useState('');
-    const [savingModalVisible, setSavingModalVisible] = useState(false);
+    const [userGivenName, setUserGivenName] = useState<string>('');
+    const [savingModalVisible, setSavingModalVisible] = useState<boolean>(false);
 
     // Have not figured out the typing problem for this
     // See IDE error for .takePictureAsync below
