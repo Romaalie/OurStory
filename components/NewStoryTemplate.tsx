@@ -4,16 +4,18 @@ import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground, Alert 
 import { useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
 import { Camera } from '@/components/expocamera/Camera'
+import * as firebase from '@/components/firebase/firebaseActions'
 
 
 export default function NewStoryTemplate() {
 
     const [localImage, setLocalImage] = useState<string>('');
     const [imageUri, setImageUri] = useState<string>(''); // Don't know what I am doing with this right now
-    const [page, setPage] = useState<Page>({ bgImageDboxPath: "", textBoxContent: "" })
+    const [page, setPage] = useState<Page>({ bgImageDboxPath: "", textBoxContent: "" });
     const [story, setStory] = useState<Story>({ id: '', name: '', pages: [] });
 
-    const [showCamera, setShowCamera] = useState(false);
+    const [namingPhase, setNamingPhase] = useState<boolean>(false);
+    const [showCamera, setShowCamera] = useState<boolean>(false);
 
     const handleSavePhoto = ({ localImage, dropboxPath }: { localImage: string, dropboxPath: string }) => {
         setImageUri(dropboxPath);
@@ -33,6 +35,7 @@ export default function NewStoryTemplate() {
             );
             return;
         }
+        // Add confirmation here!
         setStory(prevStory => ({
             ...prevStory,
             pages: [...prevStory.pages, page]
@@ -46,10 +49,11 @@ export default function NewStoryTemplate() {
             Alert.alert(
                 "Incomplete Story",
                 "There are no pages in your story. Please add at least one page.",
-                [{ text: "OK"}]
+                [{ text: "OK" }]
             );
             return;
         }
+        // Add check if there is data in current page to add it to the story
         if (story.pages.length <= 3) {
             Alert.alert(
                 "Short story",
@@ -61,18 +65,20 @@ export default function NewStoryTemplate() {
                     },
                     {
                         text: "OK",
-                        onPress: () => {endStory}
+                        onPress: () => { setNamingPhase(true) }
                     }
                 ],
                 { cancelable: true }
             );
             return;
         }
-        endStory();
+        setNamingPhase(true);
+        console.log("This should be in the logs if shortstory ok'ed.")
     }
 
     const endStory = () => {
-        // Save story to firebase                       
+        firebase.saveStory(story);
+        console.log("Story saved to firebase.")
     }
 
     // For debugging, remove when not needed
@@ -108,7 +114,7 @@ export default function NewStoryTemplate() {
                 Move to previous screen?            
             */}
             <TouchableOpacity
-            onPress={endStoryChecks}>
+                onPress={endStoryChecks}>
                 <Text>
                     End/Complete Story
                 </Text>
@@ -184,8 +190,44 @@ export default function NewStoryTemplate() {
             {/* For user guidance. Style it. */}
             <Text>{50 - page.textBoxContent.length} characters remaining</Text>
 
-
-
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={namingPhase}
+                onRequestClose={() => setNamingPhase(!namingPhase)}>
+                <Text>
+                    Name your story
+                </Text>
+                <TextInput
+                    value={story.name}
+                    onChangeText={text => setStory({ ...story, name: text })}
+                    placeholder="Give your story a name here">
+                </TextInput>
+                <TouchableOpacity
+                    onPress={() =>
+                        Alert.alert(
+                            "Confirm your story name",
+                            "You have named your story '" + story.name + "' . Is this okay?",
+                            [
+                                {
+                                    text: "Cancel",
+                                    style: "cancel"
+                                },
+                                {
+                                    text: "OK",
+                                    onPress: () => {
+                                        setNamingPhase(!namingPhase);
+                                        endStory();
+                                    }
+                                }
+                            ],
+                            { cancelable: true }
+                        )}>
+                    <Text>
+                        Save story
+                    </Text>
+                </TouchableOpacity>
+            </Modal>
         </View>
     )
 }
