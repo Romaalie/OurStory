@@ -1,4 +1,5 @@
 import { CustomHeader } from "@/components/CustomHeader";
+import { CustomHeaderNoBack } from "@/components/CustomHeaderNoBack";
 import { Stack } from "expo-router";
 
 export default function HomeLayout() {
@@ -10,6 +11,9 @@ export default function HomeLayout() {
       }} />
       <Stack.Screen name="storyList" options={{
         header: () => <CustomHeader title="Our stories" />
+      }} />
+      <Stack.Screen name="ourStory" options={{
+        header: () => <CustomHeaderNoBack title="View Story" />
       }} />
     </Stack>
   );
