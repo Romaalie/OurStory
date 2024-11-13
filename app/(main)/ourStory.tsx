@@ -1,3 +1,112 @@
-// Component for viewing a story.
-// Navigate here from storyList.
-//
+import { Story } from "@/types/story";
+import { useEffect, useState } from "react";
+import { ImageBackground, View, Text, Modal, ActivityIndicator } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { getTemporaryLink } from "@/components/dropbox/DboxGetTempLink";
+import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types/navigations";
+
+// To fix the typescript issues of typescript not being able to determine the type of the props
+type OurStoryRouteProp = RouteProp<RootStackParamList, 'ourStory'>;
+
+export default function OurStory() {
+
+    const navigation = useNavigation();
+    const route = useRoute<OurStoryRouteProp>();
+    const { story } = route.params;
+
+    const [backgroundImage, setBackgroundImage] = useState<string>('');
+    const [pageIndex, setPageIndex] = useState<number>(0);
+    const [showEndStoryModal, setShowEndStoryModal] = useState<boolean>(false);
+
+    // Get image from dropbox and setBackgroundImage.
+    const getImage = async () => {
+        // If this is slow, maybe save images temporarily to local?
+        try {
+            const imageFromDBox = await getTemporaryLink(story.pages[pageIndex].bgImageDboxPath);
+            // Figure out better test/conditionals for this?
+            if (imageFromDBox != null) {
+                setBackgroundImage(imageFromDBox);
+            }
+        }
+        catch (error) {
+            console.log("Error fetching background image from dropbox: ", error)
+        }
+    }
+
+    const nextPage = () => {
+        if (pageIndex >= story.pages.length - 1) {
+            // Add options to view it again or return to list. Or create a new one?
+            setShowEndStoryModal(true);
+            return;
+        }
+        setPageIndex(prevIndex => prevIndex + 1);
+    }
+
+    // Check if this still tries to go off on app startup
+    useEffect(() => {
+        if (story && story.pages && story.pages[pageIndex]) {
+            getImage();
+        }
+    }, [story, pageIndex]);
+
+
+    return (
+        <View>
+            <ImageBackground
+                source={backgroundImage ? { uri: backgroundImage } : undefined}
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    width: '100%',
+                    position: 'absolute',
+                    zIndex: -1
+                }}
+            >
+                {backgroundImage ? null : (
+                    // Placeholder content when no background image is set
+                    <View style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: 'white'
+                    }}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                    </View>
+                )}
+            </ImageBackground>
+
+            <View>
+                <Text>{story.name}</Text>
+
+                <Text>{story.pages[pageIndex]?.textBoxContent}</Text>
+            </View>
+
+            <TouchableOpacity
+                onPress={nextPage}
+            >
+                <Text>Next Page</Text>
+            </TouchableOpacity>
+            <Modal
+                style={{ flex: 1, minWidth: "100%" }}
+                animationType="slide"
+                transparent={true}
+                visible={showEndStoryModal}
+                onRequestClose={() => setShowEndStoryModal(false)}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+                    <Text>The story has ended.</Text>
+                    <TouchableOpacity
+                        onPress={() => {
+                            setShowEndStoryModal(false);
+                            navigation.goBack();
+                        }}
+                    >
+                        <Text>Close</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
+        </View>
+    )
+}
