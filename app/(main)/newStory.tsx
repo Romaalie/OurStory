@@ -1,10 +1,11 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
-import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground, Alert, StyleSheet } from "react-native";
+import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground, Alert } from "react-native";
 import { useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
 import { Camera } from '@/components/expocamera/Camera'
 import * as firebase from '@/components/firebase/firebaseActions'
+import { styles } from "@/styles/styles";
 
 
 export default function newStory() {
@@ -88,7 +89,7 @@ export default function newStory() {
       }, [page]);
    */
   return (
-    <View style={styles.containerMain}>
+    <View style={styles.containerBasicCentered}>
       {
         localImage ? (
           <ImageBackground
@@ -222,31 +223,3 @@ export default function newStory() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-
-  containerMain: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  backgroundLightGreen: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-    width: '100%',
-    position: 'absolute',
-    backgroundColor: '#D2F0A0',
-    zIndex: -1,
-  },
-  backgroundWithImage: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-    width: '100%',
-    position: 'absolute',
-    zIndex: -1,
-  },
-})

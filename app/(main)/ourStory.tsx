@@ -4,6 +4,7 @@ import { ImageBackground, View, Text, Modal, ActivityIndicator } from "react-nat
 import { TouchableOpacity } from "react-native";
 import { getTemporaryLink } from "@/components/dropbox/DboxGetTempLink";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { styles } from "@/styles/styles";
 
 
 export default function OurStory() {
@@ -50,25 +51,12 @@ export default function OurStory() {
         <View>
             <ImageBackground
                 source={backgroundImage ? { uri: backgroundImage } : undefined}
-                style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100%',
-                    width: '100%',
-                    position: 'absolute',
-                    zIndex: -1
-                }}
+                style={styles.backgroundWithImage}
             >
                 {backgroundImage ? null : (
                     // Placeholder content when no background image is set
                     // Doesn't work as intended. Still a long break between showing this and the actual image rendering.
-                    <View style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: 'white'
-                    }}>
+                    <View style={styles.containerBackgroundWhite}>
                         <ActivityIndicator size="large" color="#0000ff" />
                     </View>
                 )}
@@ -86,20 +74,20 @@ export default function OurStory() {
                 <Text>Next Page</Text>
             </TouchableOpacity>
             <Modal
-                style={{ flex: 1, minWidth: "100%" }}
+                style={styles.modalFullScreen}
                 animationType="slide"
-                transparent={true}
+                transparent={false}
                 visible={showEndStoryModal}
                 onRequestClose={() => setShowEndStoryModal(false)}>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                    <Text>The story has ended.</Text>
+                <View style={styles.modalView}>
+                    <Text style={styles.textStoryEnd}>This story has ended.</Text>
                     <TouchableOpacity
                         onPress={() => {
                             setShowEndStoryModal(false);
                             router.back();
                         }}
                     >
-                        <Text>Close</Text>
+                        <Text>View other stories</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>

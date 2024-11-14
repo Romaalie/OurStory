@@ -1,9 +1,10 @@
 import { fetchStories } from '@/components/firebase/firebaseActions';
 import { Story } from '@/types/story';
 import { useEffect, useState } from 'react';
-import { Text, StyleSheet, View, FlatList, ImageBackground } from 'react-native';
+import { Text, View, FlatList, ImageBackground } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { styles } from '@/styles/styles';
 
 
 export default function StoryListScreen() {
@@ -35,7 +36,7 @@ export default function StoryListScreen() {
 
 
   return (
-    <View style={styles.container}>
+    <View style={styles.containerBasicCentered}>
       <ImageBackground
         style={styles.backgroundLightGreen}
       />
@@ -61,21 +62,3 @@ export default function StoryListScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backgroundLightGreen: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-    width: '100%',
-    position: 'absolute',
-    backgroundColor: '#D2F0A0',
-    zIndex: -1
-  }
-});
