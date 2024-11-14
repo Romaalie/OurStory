@@ -1,4 +1,4 @@
-import { View, Text, Button } from 'react-native';
+import { View, Text, StyleSheet} from 'react-native';
 import { useRouter } from 'expo-router';
 import { CustomHeaderProps } from '@/types/customheaderprops';
 
@@ -8,8 +8,22 @@ import { CustomHeaderProps } from '@/types/customheaderprops';
 export function CustomHeaderNoBack({ title }: CustomHeaderProps) {
     const router = useRouter();
     return (
-        <View style={{ padding: 20, backgroundColor: '#f8f8f8', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{title}</Text>
+        <View style={styles.containerHeader}>
+            <Text style={styles.textContainerHeader}>{title}</Text>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    containerHeader: {
+        padding: 20,
+        backgroundColor: '#BCE0FD',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    textContainerHeader: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+})

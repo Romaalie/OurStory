@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
-import { BackHandler, ImageBackground, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { BackHandler, ImageBackground, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
 
@@ -13,34 +13,57 @@ export default function HomeScreen() {
   return (
     <ImageBackground
       source={backgroundImage}
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        width: '100%',
-        height: '100%',
-        position: 'absolute'
-      }}
+      style={styles.backgroundImage}
     >
 
       <SafeAreaView
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+        style={styles.safeArea}
       >
 
-        <Text>OUR STORY header text, adjust</Text>
+        <Text
+          style={styles.headerText}
+        >OUR STORY</Text>
 
-        <View>
-          <Link href="/newStory">New Story</Link>
-          <Link href="/storyList">Our Stories</Link>
+        <View
+          style={styles.containerMenuItems}>
+          <Link
+            style={styles.menuText}
+            href="/newStory">New Story</Link>
+          <Link
+            style={styles.menuText}
+            href="/storyList">Our Stories</Link>
           <TouchableOpacity onPress={handleExitApp} style={{ marginTop: 20 }}>
-            <Text style={{ color: "red" }}>Close App</Text>
+            <Text style={styles.menuText}>Exit</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     </ImageBackground>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  safeArea: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerText: {
+    fontFamily: 'ShadowsIntoLight-Regular',
+    fontSize: 60,
+  },
+  menuText: {
+    fontSize: 30
+  },
+  containerMenuItems: {
+    flex: 1,
+    marginTop: 30
+  }
+});
