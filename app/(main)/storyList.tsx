@@ -3,8 +3,6 @@ import { Story } from '@/types/story';
 import { useEffect, useState } from 'react';
 import { Text, StyleSheet, View, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native';
-// import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from '@/types/navigations';
 import { router } from 'expo-router';
 
 
@@ -12,7 +10,6 @@ export default function StoryListScreen() {
 
   const [stories, setStories] = useState<Story[]>([]);
 
-  //const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const getStories = async () => {
@@ -29,7 +26,6 @@ export default function StoryListScreen() {
   }, []);
 
   const handleStoryPress = (story: Story) => {
-    //navigation.navigate('ourStory', { story });
     const storyString = JSON.stringify(story);
     router.push({
       pathname: '/(main)/ourStory',

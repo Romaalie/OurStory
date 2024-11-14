@@ -3,24 +3,15 @@ import { useEffect, useState } from "react";
 import { ImageBackground, View, Text, Modal, ActivityIndicator } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { getTemporaryLink } from "@/components/dropbox/DboxGetTempLink";
-import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "@/types/navigations";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-// To fix the typescript issues of typescript not being able to determine the type of the props
-type OurStoryRouteProp = RouteProp<RootStackParamList, 'ourStory'>;
 
 export default function OurStory() {
 
     const router = useRouter();
     const { story: storyString } = useLocalSearchParams<{ story: string }>();
-
     const story: Story = storyString ? JSON.parse(storyString) : null;
-    /*
-        const navigation = useNavigation();
-        const route = useRoute<OurStoryRouteProp>();
-        const { story } = route.params;
-    */
+
     const [backgroundImage, setBackgroundImage] = useState<string>('');
     const [pageIndex, setPageIndex] = useState<number>(0);
     const [showEndStoryModal, setShowEndStoryModal] = useState<boolean>(false);
