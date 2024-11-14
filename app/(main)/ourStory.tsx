@@ -5,21 +5,26 @@ import { TouchableOpacity } from "react-native";
 import { getTemporaryLink } from "@/components/dropbox/DboxGetTempLink";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types/navigations";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 // To fix the typescript issues of typescript not being able to determine the type of the props
 type OurStoryRouteProp = RouteProp<RootStackParamList, 'ourStory'>;
 
 export default function OurStory() {
 
-    const navigation = useNavigation();
-    const route = useRoute<OurStoryRouteProp>();
-    const { story } = route.params;
+    const router = useRouter();
+    const { story: storyString } = useLocalSearchParams<{ story: string }>();
 
+    const story: Story = storyString ? JSON.parse(storyString) : null;
+    /*
+        const navigation = useNavigation();
+        const route = useRoute<OurStoryRouteProp>();
+        const { story } = route.params;
+    */
     const [backgroundImage, setBackgroundImage] = useState<string>('');
     const [pageIndex, setPageIndex] = useState<number>(0);
     const [showEndStoryModal, setShowEndStoryModal] = useState<boolean>(false);
 
-    // Get image from dropbox and setBackgroundImage.
     const getImage = async () => {
         // If this is slow, maybe save images temporarily to local?
         try {
@@ -43,7 +48,6 @@ export default function OurStory() {
         setPageIndex(prevIndex => prevIndex + 1);
     }
 
-    // Check if this still tries to go off on app startup
     useEffect(() => {
         if (story && story.pages && story.pages[pageIndex]) {
             getImage();
@@ -67,6 +71,7 @@ export default function OurStory() {
             >
                 {backgroundImage ? null : (
                     // Placeholder content when no background image is set
+                    // Doesn't work as intended. Still a long break between showing this and the actual image rendering.
                     <View style={{
                         flex: 1,
                         justifyContent: 'center',
@@ -100,7 +105,7 @@ export default function OurStory() {
                     <TouchableOpacity
                         onPress={() => {
                             setShowEndStoryModal(false);
-                            navigation.goBack();
+                            router.back();
                         }}
                     >
                         <Text>Close</Text>
