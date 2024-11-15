@@ -1,15 +1,11 @@
 import axios from 'axios';
+import { retrieveDropboxToken } from '../exposecurestore/securestoreActions';
 
 // THIS BASE WAS CREATED BY CHATGPT
 
-// Change to expo secure-store if time
-const DROPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_DROPBOX_ACCESS_TOKEN;
+// Does this need additional error handling?
+const DROPBOX_ACCESS_TOKEN = retrieveDropboxToken();
 
-/**
- * Fetches a temporary link for a file stored on Dropbox.
- * @param dropboxPath The path of the file on Dropbox, e.g., "/Apps/YourAppFolder/filename.jpg"
- * @returns The temporary link to the file, or null if there's an error
- */
 export async function getTemporaryLink(dropboxPath: string): Promise<string | null> {
     try {
         const response = await axios.post(
