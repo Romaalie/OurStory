@@ -4,10 +4,11 @@ import { retrieveDropboxToken } from '../exposecurestore/securestoreActions';
 // THIS BASE WAS CREATED BY CHATGPT
 
 // Does this need additional error handling?
-const DROPBOX_ACCESS_TOKEN = retrieveDropboxToken();
+
 
 export async function getTemporaryLink(dropboxPath: string): Promise<string | null> {
     try {
+        const DROPBOX_ACCESS_TOKEN = await retrieveDropboxToken();
         const response = await axios.post(
             'https://api.dropboxapi.com/2/files/get_temporary_link',
             { path: dropboxPath },
