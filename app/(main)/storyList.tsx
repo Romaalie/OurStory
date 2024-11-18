@@ -16,6 +16,12 @@ export default function StoryListScreen() {
     const getStories = async () => {
       try {
         const stories = await fetchStories();
+        const ids = stories.map(story => story.id);
+        const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+
+        if (duplicateIds.length > 0) {
+          console.warn('Duplicate IDs found:', duplicateIds);
+        }
         setStories(stories);
       }
       catch (error) {
@@ -44,15 +50,15 @@ export default function StoryListScreen() {
         ListHeaderComponent={
           stories.length === 0 ? (
             <Text>You don't have any stories saved currently</Text>
-          ) : null
+          ) : <Text style={styles.textContainerHeader}>Select the story you want to view:</Text>
         }
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id || item.name || String(Math.random())}
         renderItem={({ item }) =>
           <View>
             <TouchableOpacity
               onPress={() => handleStoryPress(item)}
             >
-              <Text>Click here to view your story: {item.name}</Text>
+              <Text style={styles.textFlatListStories}>{item.name}</Text>
             </TouchableOpacity>
           </View>
 
