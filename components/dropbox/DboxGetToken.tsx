@@ -4,6 +4,7 @@ import { retrieveDropboxToken, saveDropboxToken } from '../exposecurestore/secur
 import { checkTokenValidity } from './DboxGetCurrentAccount';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { generateCodeChallenge, generateCodeVerifier } from './DboxPKCE';
+import { styles } from '@/styles/styles';
 
 const DROPBOX_TOKEN_URL = 'https://api.dropbox.com/oauth2/token';
 const DROPBOX_CLIENT_ID = process.env.EXPO_PUBLIC_DROPBOX_APP_KEY ?? '';
@@ -152,8 +153,8 @@ export const DboxGetToken = ({ onAuthComplete }: DboxGetTokenProps) => {
         onAuthCodeReceived={handleAuthCodeReceived}
         codeChallenge={codeChallenge}
       />
-    ) : (<View>
-      <Text> Completing authentication to dropbox </Text>
+    ) : (<View style={styles.containerBasicCentered}>
+      <Text> Handling authentication to dropbox </Text>
       <ActivityIndicator size="large" color="#0000ff" />
     </View>
     )

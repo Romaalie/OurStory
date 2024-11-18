@@ -1,13 +1,14 @@
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
+import { retrieveDropboxToken } from '../exposecurestore/securestoreActions';
 
-//THIS BASE WAS CREATED BY CHATGPT
+// The base for this component was created by ChatGPT.
 
 // This solution was reached because there were unknown issues utilizing photo.base64 from the Camera component.
 // See DboxUploadDepr.tsx for one of the old versions
 
-// Change to expo secure-store if time
-const DROPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_DROPBOX_ACCESS_TOKEN;
+// Currently assumed that a valid token has been retrieved at start and save to secure-store.
+// No checks or anything in case that is untrue.
 
 export async function uploadImageToDropbox(imageUri: string, dropboxPath: string): Promise<string | null> {
     console.log('Preparing to upload image to Dropbox...');
@@ -41,6 +42,9 @@ export async function uploadImageToDropbox(imageUri: string, dropboxPath: string
         console.log('File Blob type:', 'image/jpeg');  // Assuming it's a JPEG image
         console.log('File Blob size:', fileBlobData.length);  // Ensure it's not 0
 
+        // Retrieve dbox token from secure-store
+        const DROPBOX_ACCESS_TOKEN = await retrieveDropboxToken();
+
         // Upload to Dropbox
         const uploadResponse = await axios.post(
             'https://content.dropboxapi.com/2/files/upload',
@@ -59,7 +63,7 @@ export async function uploadImageToDropbox(imageUri: string, dropboxPath: string
             }
         );
 
-        // Success response
+        // Typing error with error.message. Not sure how to fix.
         console.log('Successfully uploaded to Dropbox:', uploadResponse.data);
         return uploadResponse.data.path_lower;
     } catch (error) {
