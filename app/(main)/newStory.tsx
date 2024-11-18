@@ -8,14 +8,19 @@ import * as firebase from '@/components/firebase/firebaseActions'
 import { styles } from "@/styles/styles";
 import { uploadImageToDropbox } from "@/components/dropbox/DboxUpload";
 import { router } from "expo-router";
+import { useTitle } from "@/components/TitleContext";
+
 
 
 export default function newStory() {
+
+  const { setTitle } = useTitle();
 
   const [localImage, setLocalImage] = useState<string>('');
   const [page, setPage] = useState<Page>({ bgImageDboxPath: "", textBoxContent: "" });
   const [story, setStory] = useState<Story>({ id: '', name: '', pages: [] });
 
+  const [uploading, setUploading] = useState<boolean>(false);
   const [namingPhase, setNamingPhase] = useState<boolean>(false);
   const [showCamera, setShowCamera] = useState<boolean>(false);
 
@@ -56,6 +61,8 @@ export default function newStory() {
 
 
   // Save photo to dropbox
+  // This would be better to do only when the story is actually saved but no time to change now.
+  // There is an issue with adding a page if the user tries to do it too fast and upload isn't finished.
   const handleSavePhoto = async (localImageUri: string, userGivenName: string) => {
 
     setLocalImage(localImageUri);
@@ -66,9 +73,11 @@ export default function newStory() {
 
     const uploadAttempt = async () => {
       try {
+        setUploading(true);
         await uploadImageToDropbox(localImageUri, dropboxPath);
-        setPage(prevPage => ({ ...prevPage, bgImageDboxPath: dropboxPath }));
+        await setPage(prevPage => ({ ...prevPage, bgImageDboxPath: dropboxPath }));
         setShowCamera(false);
+        setUploading(false);
       }
       catch (error) {
         if (retryCount < maxRetries) {
@@ -98,11 +107,13 @@ export default function newStory() {
         }
       }
     }
-
     uploadAttempt();
   };
 
   const addPage = () => {
+    console.log("Adding page.");
+    console.log("PageTboxContent: ", page.textBoxContent);
+    console.log("PageBgImgDPath: ", page.bgImageDboxPath);
 
     if (!page.textBoxContent || !page.bgImageDboxPath) {
       Alert.alert(
@@ -129,6 +140,7 @@ export default function newStory() {
             }));
             setPage({ bgImageDboxPath: "", textBoxContent: "" })
             setLocalImage('');
+            console.log("Added page. Debug info: ", localImage, page.bgImageDboxPath, page.textBoxContent)
           }
         }
       ],
@@ -136,8 +148,7 @@ export default function newStory() {
     )
   };
 
-  // 
-  const endStoryChecks = () => {
+  const endStoryChecks = async () => {
     if (!story.pages || story.pages.length === 0) {
       Alert.alert(
         "Incomplete Story",
@@ -146,7 +157,42 @@ export default function newStory() {
       );
       return;
     }
-    // Add check if there is data in current page to add it to the story
+    if (page.textBoxContent || page.bgImageDboxPath) {
+      Alert.alert(
+        "Add current page",
+        "There is text or a picture in your current page. Do you want to add it to your story?",
+        [
+          {
+            text: "No"
+          },
+          {
+            text: "Yes",
+            onPress: async () => {
+              if (page.textBoxContent && page.bgImageDboxPath) {
+                setStory(prevStory => ({
+                  ...prevStory,
+                  pages: [...prevStory.pages, page]
+                }));
+                setPage({ bgImageDboxPath: "", textBoxContent: "" })
+                setLocalImage('');
+                console.log("Added page. Debug info: ", localImage, page.bgImageDboxPath, page.textBoxContent)
+
+                setNamingPhase(true);
+              }
+              if (!page.textBoxContent || !page.bgImageDboxPath) {
+                Alert.alert(
+                  "Incomplete Page",
+                  "Please add both text and a background image before trying to add a new page.",
+                  [{ text: "OK" }]
+                );
+                return;
+              }
+            }
+          }
+        ]
+      )
+      return;
+    }
     if (story.pages.length <= 3) {
       Alert.alert(
         "Short story",
@@ -158,21 +204,35 @@ export default function newStory() {
           },
           {
             text: "OK",
-            onPress: () => { setNamingPhase(true) }
+            onPress: () => setNamingPhase(true)
           }
         ],
         { cancelable: true }
       );
       return;
     }
-    setNamingPhase(true);
-    console.log("This should be in the logs if shortstory ok'ed.")
   }
 
   const endStory = () => {
     firebase.saveStory(story);
+    setStory({ id: "", name: "", pages: [] });
+    setLocalImage("");
+    setPage({ bgImageDboxPath: "", textBoxContent: "" });
     console.log("Story saved to firebase.")
+    router.back();
   }
+
+  useEffect(() => {
+    if (localImage) {
+      console.log("Image updated:", localImage); // Debug to confirm the image URI is set
+    }
+  }, [localImage]);
+
+
+  // Set custom title
+  useEffect(() => {
+    setTitle('New Story');
+  }, [setTitle]);
 
   // For debugging, remove when not needed
   /*     
@@ -197,13 +257,19 @@ export default function newStory() {
                 (preview feature?)
                 Move to previous screen/menu or give option to view story now?           
       */}
-      <TouchableOpacity
-        onPress={endStoryChecks}>
-        <Text>
-          End/Complete Story
-        </Text>
-        <Icon name="checkcircle" />
-      </TouchableOpacity>
+
+      {
+        <TouchableOpacity
+          style={styles.containerNewStoryButtonsRow}
+          onPress={endStoryChecks}>
+          <Text style={styles.textNewStoryButtons}>
+            Finish Story
+          </Text>
+          <Icon
+            style={styles.iconMargin}
+            name="checkcircle" />
+        </TouchableOpacity>
+      }
 
       {/*
                 Button for adding a background image/taking a picture.
@@ -211,17 +277,28 @@ export default function newStory() {
                 Or utilize an alert. Anyhow functionality in another component.
             */}
       <TouchableOpacity
+        style={styles.containerNewStoryButtonsRow}
         onPress={() => setShowCamera(true)}>
         {!localImage ? (
-          <Text>
-            Add background image
-          </Text>
+          <>
+            <Text style={styles.textNewStoryButtons}>
+              Add background image
+            </Text>
+            <Icon
+              style={styles.iconMargin}
+              name="pluscircle" />
+          </>
         ) :
-          <Text>
-            Change background image
-          </Text>
+          <>
+            <Text style={styles.textNewStoryButtons}>
+              Change background image
+            </Text>
+            <Icon
+              style={styles.iconMargin}
+              name="reload1" />
+          </>
         }
-        <Icon name="pluscircle" />
+
       </TouchableOpacity>
 
       <Modal
@@ -245,11 +322,14 @@ export default function newStory() {
                 Position to the right of add image, so put them in a flex horizontal view?                
             */}
       <TouchableOpacity
+        style={styles.containerNewStoryButtonsRow}
         onPress={addPage}>
-        <Text>
+        <Text style={styles.textNewStoryButtons}>
           Next page
         </Text>
-        <Icon name="arrowright" />
+        <Icon
+          style={styles.iconMargin}
+          name="arrowright" />
       </TouchableOpacity>
 
       {/*
@@ -257,13 +337,14 @@ export default function newStory() {
                 Wrap in a view to limit width.
             */}
       <TextInput
+        style={styles.textInput}
         value={page.textBoxContent}
         editable
-        multiline
+        multiline={true}
         numberOfLines={5}
         maxLength={50}
         onChangeText={text => setPage({ ...page, textBoxContent: text })}
-        placeholder="There is a multiline textbox here. Need to contain it."
+        placeholder="Write your story here"
       />
       {/* Show guiding plus icon if there is no content. Reposition icon or something though. */}
       {
@@ -272,46 +353,52 @@ export default function newStory() {
         ) : null
       }
       {/* For user guidance. Style it. */}
-      <Text>{50 - page.textBoxContent.length} characters remaining</Text>
+      <Text style={styles.textFadedGuiding}>{50 - page.textBoxContent.length} characters remaining</Text>
 
       <Modal
+        style={styles.modalFullScreen}
         animationType="slide"
-        transparent={true}
+        transparent={false}
         visible={namingPhase}
         onRequestClose={() => setNamingPhase(!namingPhase)}>
-        <Text>
-          Name your story
-        </Text>
-        <TextInput
-          value={story.name}
-          onChangeText={text => setStory({ ...story, name: text })}
-          placeholder="Give your story a name here">
-        </TextInput>
-        <TouchableOpacity
-          onPress={() =>
-            Alert.alert(
-              "Confirm your story name",
-              "You have named your story '" + story.name + "' . Is this okay?",
-              [
-                {
-                  text: "Cancel",
-                  style: "cancel"
-                },
-                {
-                  text: "OK",
-                  onPress: () => {
-                    setNamingPhase(!namingPhase);
-                    endStory();
-                  }
-                }
-              ],
-              { cancelable: true }
-            )}>
-          <Text>
-            Save story
+        <View style={styles.containerBasicCentered}>
+          <Text style={styles.textContainerHeader}>
+            Name your story
           </Text>
-        </TouchableOpacity>
-      </Modal>
-    </View>
+          <TextInput
+            style={styles.textIndexMenuItems}
+            maxLength={20}
+            value={story.name}
+            onChangeText={text => setStory({ ...story, name: text })}
+            placeholder="Give your story a name here">
+          </TextInput>
+          <Text style={styles.textFadedGuiding}>{20 - story.name.length} characters remaining</Text>
+          <TouchableOpacity
+            onPress={() =>
+              Alert.alert(
+                "Story name",
+                "You have named your story '" + story.name + "' . Is this okay?",
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel"
+                  },
+                  {
+                    text: "OK",
+                    onPress: () => {
+                      setNamingPhase(!namingPhase);
+                      endStory();
+                    }
+                  }
+                ],
+                { cancelable: true }
+              )}>
+            <Text style={styles.textContainerHeader}>
+              Save story
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal >
+    </View >
   )
 }
