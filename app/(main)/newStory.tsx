@@ -1,29 +1,105 @@
 import { Story } from "@/types/story";
 import { Page } from "@/types/page";
-import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground, Alert } from "react-native";
-import { useState } from "react";
+import { Text, TextInput, View, TouchableOpacity, Modal, ImageBackground, Alert, BackHandler } from "react-native";
+import { useEffect, useState } from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
 import { Camera } from '@/components/expocamera/Camera'
 import * as firebase from '@/components/firebase/firebaseActions'
 import { styles } from "@/styles/styles";
+import { uploadImageToDropbox } from "@/components/dropbox/DboxUpload";
+import { router } from "expo-router";
 
 
 export default function newStory() {
 
   const [localImage, setLocalImage] = useState<string>('');
-  const [imageUri, setImageUri] = useState<string>(''); // Don't know what I am doing with this right now
   const [page, setPage] = useState<Page>({ bgImageDboxPath: "", textBoxContent: "" });
   const [story, setStory] = useState<Story>({ id: '', name: '', pages: [] });
 
   const [namingPhase, setNamingPhase] = useState<boolean>(false);
   const [showCamera, setShowCamera] = useState<boolean>(false);
 
-  const handleSavePhoto = ({ localImage, dropboxPath }: { localImage: string, dropboxPath: string }) => {
-    setImageUri(dropboxPath);
-    setLocalImage(localImage);
-    setPage(prevPage => ({ ...prevPage, bgImageDboxPath: dropboxPath }));
-    setShowCamera(false);
-    //console.log(dropboxPath);
+  const userId = 'tester';
+
+  // Handle back button behavior to prevent accidental closing of unsaved story.
+  // Android only
+  useEffect(() => {
+    const backAction = () => {
+      if (page.textBoxContent || localImage || story.pages.length > 0) {
+        Alert.alert(
+          "Discard changes?",
+          "You have unsaved material in your story. Are you sure you want to leave without saving/completing the story?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Yes",
+              onPress: () => {
+                router.back();
+              }
+            }
+          ]
+        );
+        return true;  // Return true to prevent the default back navigation behavior
+      } else {
+        return false; // Let the default back navigation proceed
+      }
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+    // Cleanup the event listener when the component is unmounted
+    return () => backHandler.remove();
+  }, [page, localImage]);
+
+
+  // Save photo to dropbox
+  const handleSavePhoto = async (localImageUri: string, userGivenName: string) => {
+
+    setLocalImage(localImageUri);
+    const dropboxPath = `/OurStoryImageStorage/${userId}/${userGivenName}.jpg`
+
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const uploadAttempt = async () => {
+      try {
+        await uploadImageToDropbox(localImageUri, dropboxPath);
+        setPage(prevPage => ({ ...prevPage, bgImageDboxPath: dropboxPath }));
+        setShowCamera(false);
+      }
+      catch (error) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          Alert.alert(
+            'Error uploading image to dropbox',
+            'There was an issue uploading the image to dropbox, would you like to try again?',
+            [
+              {
+                text: 'Cancel',
+                onPress: () => {
+                  setLocalImage('')
+                  setShowCamera(false);
+                }
+              },
+              {
+                text: 'Retry',
+                onPress: () => uploadAttempt(),
+              }
+            ]
+          )
+        }
+        else {
+          Alert.alert('Upload failed', 'Max retries reached.');
+          setLocalImage('');
+          setShowCamera(false);
+        }
+      }
+    }
+
+    uploadAttempt();
   };
 
   const addPage = () => {
@@ -36,15 +112,31 @@ export default function newStory() {
       );
       return;
     }
-    // Add confirmation here!
-    setStory(prevStory => ({
-      ...prevStory,
-      pages: [...prevStory.pages, page]
-    }));
-    setPage({ bgImageDboxPath: "", textBoxContent: "" })
-    setLocalImage('');
+    Alert.alert(
+      "Add page",
+      "Do you want to add this page to the story?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            setStory(prevStory => ({
+              ...prevStory,
+              pages: [...prevStory.pages, page]
+            }));
+            setPage({ bgImageDboxPath: "", textBoxContent: "" })
+            setLocalImage('');
+          }
+        }
+      ],
+      { cancelable: true }
+    )
   };
 
+  // 
   const endStoryChecks = () => {
     if (!story.pages || story.pages.length === 0) {
       Alert.alert(

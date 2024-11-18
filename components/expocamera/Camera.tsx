@@ -6,15 +6,15 @@ import { saveToFilesystem } from '../filesystem/filesystemActions';
 import { uploadImageToDropbox } from '../dropbox/DboxUpload';
 
 
-export function Camera({ onClose, onSavePhoto, userId = 'tester' }: {
+export function Camera({ onClose, onSavePhoto}: {
     onClose: () => void;
-    onSavePhoto: (data: { localImage: string; dropboxPath: string }) => void;
-    userId?: string;
+    onSavePhoto: (localImageUri: string, userGivenName: string) => void;
+
 }) {
 
     // Check the types for these
     const [photoName, setPhotoName] = useState<string>('');
-    const [photoBase64, setPhotoBase64] = useState<string>('');
+    const [photoBase64, setPhotoBase64] = useState<string>(''); // Currently unused?
     const [permission, requestPermission] = useCameraPermissions();
 
     const [userGivenName, setUserGivenName] = useState<string>('');
@@ -23,7 +23,7 @@ export function Camera({ onClose, onSavePhoto, userId = 'tester' }: {
     // Have not figured out the typing problem for this
     // See IDE error for .takePictureAsync below
     const camera = useRef(null);
-    const dropboxPath = `/OurStoryImageStorage/${userId}/${userGivenName}.jpg`
+
 
     const snap = async () => {
         if (camera.current) {
@@ -44,20 +44,9 @@ export function Camera({ onClose, onSavePhoto, userId = 'tester' }: {
             // Add error handling?
             await saveToFilesystem({
                 fromUri: photoName,
-                toUri: permanentUri,
-                onSave: onSavePhoto,
+                toUri: permanentUri
             });
-            // Add error handling?
-            const uploadedPath = await uploadImageToDropbox(photoName, dropboxPath);
-
-            if (uploadedPath) {
-                onSavePhoto({ localImage: permanentUri, dropboxPath: uploadedPath });
-            }
-            else {
-                console.error('Dropbox upload failed.');
-            }
-
-
+            onSavePhoto(permanentUri, userGivenName);
             setPhotoName('');
             setPhotoBase64('');
             setSavingModalVisible(false);
