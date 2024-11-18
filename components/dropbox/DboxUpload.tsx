@@ -39,8 +39,8 @@ export async function uploadImageToDropbox(imageUri: string, dropboxPath: string
         }
 
         // Log the Blob content type and size
-        console.log('File Blob type:', 'image/jpeg');  // Assuming it's a JPEG image
-        console.log('File Blob size:', fileBlobData.length);  // Ensure it's not 0
+        //console.log('File Blob type:', 'image/jpeg');  // Assuming it's a JPEG image
+        //console.log('File Blob size:', fileBlobData.length);  // Ensure it's not 0
 
         // Retrieve dbox token from secure-store
         const DROPBOX_ACCESS_TOKEN = await retrieveDropboxToken();
