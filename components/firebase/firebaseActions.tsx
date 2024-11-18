@@ -14,6 +14,7 @@ export const saveStory = (story: Story) => {
     }
 };
 
+// Sometimes this returns all the ids as "". No idea why.
 export const fetchStories = (): Promise<Story[]> => {
     return new Promise((resolve, reject) => {
         const storiesRef = ref(database, 'stories/');
@@ -21,8 +22,9 @@ export const fetchStories = (): Promise<Story[]> => {
             const data = snapshot.val();
             if (data) {
                 const stories: Story[] = Object.entries(data).map(([id, storyData]) => ({
+                    ...storyData as Omit<Story, 'id'>,
                     id,
-                    ...storyData as Omit<Story, 'id'>
+
                 }));
                 resolve(stories);
             } else {
