@@ -3,20 +3,19 @@ import { useRef, useState } from 'react';
 import { Button, View, Text, Modal, TextInput } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { saveToFilesystem } from '../filesystem/filesystemActions';
-import { uploadImageToDropbox } from '../dropbox/DboxUpload';
+import { styles } from '@/styles/styles';
 
 
-export function Camera({ onClose, onSavePhoto}: {
+export function Camera({ onClose, onSavePhoto }: {
     onClose: () => void;
     onSavePhoto: (localImageUri: string, userGivenName: string) => void;
 
 }) {
+    // Currently unused?
+    //const [photoBase64, setPhotoBase64] = useState<string>(''); 
 
-    // Check the types for these
-    const [photoName, setPhotoName] = useState<string>('');
-    const [photoBase64, setPhotoBase64] = useState<string>(''); // Currently unused?
     const [permission, requestPermission] = useCameraPermissions();
-
+    const [photoName, setPhotoName] = useState<string>('');
     const [userGivenName, setUserGivenName] = useState<string>('');
     const [savingModalVisible, setSavingModalVisible] = useState<boolean>(false);
 
@@ -29,7 +28,7 @@ export function Camera({ onClose, onSavePhoto}: {
         if (camera.current) {
             const photo = await camera.current.takePictureAsync({ base64: true });
             setPhotoName(photo.uri);
-            setPhotoBase64(photo.base64);
+            //setPhotoBase64(photo.base64);
             setSavingModalVisible(true);
         }
     };
@@ -48,7 +47,7 @@ export function Camera({ onClose, onSavePhoto}: {
             });
             onSavePhoto(permanentUri, userGivenName);
             setPhotoName('');
-            setPhotoBase64('');
+            //setPhotoBase64('');
             setSavingModalVisible(false);
             closeCamera();
         }
@@ -65,15 +64,15 @@ export function Camera({ onClose, onSavePhoto}: {
     if (!permission.granted) {
         // Camera permissions are not granted yet.
         return (
-            <View>
+            <View style={styles.containerBasicCentered}>
                 <Button onPress={requestPermission} title="grant permission" />
             </View>
         );
     }
 
     return (
-        <View style={{ flex: 1 }}>
-            <CameraView style={{ flex: 1, minWidth: "100%" }} ref={camera} />
+        <View style={styles.containerBasicCentered}>
+            <CameraView style={styles.containerCameraView} ref={camera} />
             <Button title="Take Photo" onPress={snap} />
             <Button title="Cancel" onPress={onClose} />
 
@@ -83,17 +82,11 @@ export function Camera({ onClose, onSavePhoto}: {
                 animationType="fade"
                 onRequestClose={() => setSavingModalVisible(false)}
             >
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                    <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%' }}>
-                        <Text style={{ fontSize: 18, marginBottom: 10 }}>Enter Photo Name</Text>
+                <View style={styles.containerCameraNamePic}>
+                    <View style={styles.containerCameraNamePicInner}>
+                        <Text style={styles.textCameraNamePic}>Enter Photo Name</Text>
                         <TextInput
-                            style={{
-                                height: 40,
-                                borderColor: 'gray',
-                                borderWidth: 1,
-                                marginBottom: 20,
-                                paddingLeft: 10,
-                            }}
+                            style={styles.textInputCameraNamePic}
                             placeholder="Enter name for photo"
                             value={userGivenName}
                             onChangeText={setUserGivenName}

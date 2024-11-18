@@ -1,29 +1,13 @@
-import { View, Text, StyleSheet} from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text } from 'react-native';
 import { CustomHeaderProps } from '@/types/customheaderprops';
+import { useTitle } from './TitleContext';
+import { styles } from '@/styles/styles';
 
-
-// A quick test with the help of ChatGPT on how to customize navigation headers
-// Needs a lot of styling but works otherwise as intended
 export function CustomHeaderNoBack({ title }: CustomHeaderProps) {
-    const router = useRouter();
+    const { title: contextTitle } = useTitle();
     return (
-        <View style={styles.containerHeader}>
-            <Text style={styles.textContainerHeader}>{title}</Text>
+        <View style={styles.containerCustomHeaderNoBack}>
+            <Text style={styles.textContainerHeader}>{contextTitle || title}</Text>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    containerHeader: {
-        padding: 20,
-        backgroundColor: '#BCE0FD',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    textContainerHeader: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-})
